@@ -82,6 +82,8 @@ func (wallet *Wallet) SendFunds(options ...SendFundsOption) (tx *transaction.Tra
 	inputs, consumedFunds := wallet.buildInputs(consumedOutputs)
 	outputs := wallet.buildOutputs(sendFundsOptions, consumedFunds)
 	tx = transaction.New(inputs, outputs)
+	//add data
+	tx.SetDataPayload([]byte(sendFundsOptions.DataPayload))
 	for addr := range consumedOutputs {
 		tx.Sign(signaturescheme.ED25519(*wallet.Seed().KeyPair(addr.Index)))
 	}
@@ -122,6 +124,7 @@ func (wallet *Wallet) CreateAsset(asset Asset) (assetColor balance.Color, err er
 
 	tx, err := wallet.SendFunds(
 		Destination(wallet.ReceiveAddress().Address, asset.Amount, balance.ColorNew),
+		addOptionalDataPayload(asset.Name),
 	)
 	if err != nil {
 		return

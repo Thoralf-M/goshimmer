@@ -62,10 +62,22 @@ func Remainder(addr Address) SendFundsOption {
 	}
 }
 
+// Add DataPayload if not empty
+func addOptionalDataPayload(DataPayload string) SendFundsOption {
+	return func(options *sendFundsOptions) error {
+		if DataPayload != "" {
+			options.DataPayload = DataPayload
+		}
+
+		return nil
+	}
+}
+
 // sendFundsOptions is a struct that is used to aggregate the optional parameters provided in the SendFunds call.
 type sendFundsOptions struct {
 	Destinations     map[address.Address]map[balance.Color]uint64
 	RemainderAddress Address
+	DataPayload      string
 }
 
 // buildSendFundsOptions is a utility function that constructs the sendFundsOptions.

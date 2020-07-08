@@ -1,6 +1,10 @@
 package wallet
 
 import (
+	"encoding/json"
+	"os"
+
+	"github.com/iotaledger/goshimmer/client"
 	"github.com/iotaledger/goshimmer/dapps/valuetransfers/packages/balance"
 	"github.com/iotaledger/hive.go/marshalutil"
 	"github.com/iotaledger/hive.go/typeutils"
@@ -108,7 +112,45 @@ func (assetRegistry *AssetRegistry) Name(color balance.Color) string {
 		return "IOTA"
 	}
 
-	return color.String()
+	//get nodeip
+	// open config file
+	file, err := os.Open("config.json")
+	// config type that defines the config structure
+	type configuration struct {
+		WebAPI string
+	}
+
+	// internal variable that holds the config
+	var config = configuration{}
+
+	if file, err = os.Open("config.json"); err != nil {
+		panic(err)
+	}
+
+	defer file.Close()
+
+	// decode config file
+	if err = json.NewDecoder(file).Decode(&config); err != nil {
+		panic(err)
+	}
+
+	goshimAPI := client.NewGoShimmerAPI(config.WebAPI)
+	// tx, err := goshimAPI.GetAttachments("6nA7eMLKcjsVqG8MQaqMwnQtZX1GBogQyp39KLRDDYoC")
+	tx, err := goshimAPI.GetTransactionByID(color.String())
+
+	// tx, err := wallet.connector.GetTransactionByID(color.String())
+	if err != nil {
+		// return error
+	}
+
+	colorName := string(tx.Transaction.DataPayload)
+	// colorName := string(tx.DataPayload)
+	//return color if no name was sent in the DataPayload
+	if colorName == "" {
+		return color.String()
+	}
+
+	return colorName
 }
 
 // Symbol return the symbol of the token.
